@@ -12,6 +12,12 @@ for zipping the stream files , we are using `zstd`
 
 ## usage
 
+### b.sh
+
+the script `b.sh` does all the steps in `making a snapshot` and `backing up`. read those sections to get a closer look.
+
+all you need to do for `b.sh` to work is just plug in the special usb. the mounting is all handled , but if you already have something mounted that is also fine.
+
 ### making a snapshot
 
 to make a btrfs snapshot ,
@@ -24,6 +30,7 @@ cd /mnt/root-btrfs
 # make a readonly snapshot of either @ or @home
 sudo btrfs subvolume snapshot -r \@home/ snapshots/\@home_$(date +%Y-%m-%d_%H%M)
 ```
+
 note that there should exist a `snapshots/` folder in the btrfs root. if not , then make one.
 
 ### backing up
