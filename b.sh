@@ -54,8 +54,13 @@ sudo btrfs subvolume snapshot -r "@home/" "snapshots/@home_$SUFFIX"
 echo
 echo "backing up @ snapshot (this may take a while) ..."
 sudo btrfs send "snapshots/@_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/@_$SUFFIX.btrfs.zst"
+
 echo
 echo "backing up @home snapshot (this may take a while) ..."
 sudo btrfs send "snapshots/@home_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst"
 
 echo "backup completed successfully: $SUFFIX"
+
+# step 5: final message
+echo
+echo "make sure to delete the created snapshots in $root if you don't want to keep them there! you can now run pacman -Syu to upgrade."
