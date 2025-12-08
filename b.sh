@@ -31,13 +31,14 @@ fi
 
 # step 2: mount btrfs root if not already mounted
 # check if /dev/sda3 is mounted
-if ! mountpoint -q "/mnt/root-btrfs/"; then
+root="/mnt/root-btrfs"
+if ! mountpoint -q "$root"; then
     echo "btrfs root is not mounted. mounting at /mnt/root-btrfs/ ..."
-    sudo mount "/dev/sda3" "/mnt/root-btrfs"
+    sudo mount "/dev/sda3" "$root"
 fi
 
 # check if partitions @ and @home exist , and check if snapshots/ exists
-cd "/mnt/root-btrfs/"
+cd "$root"
 if [[ ! -d "@/" || ! -d "@home/" || ! -d "snapshots/" ]]; then
     echo "missing either @/ , @home/ , or snapshots/ in /mnt/root-btrfs/"
     exit 1
@@ -50,9 +51,11 @@ sudo btrfs subvolume snapshot -r "@/" "snapshots/@_$SUFFIX"
 sudo btrfs subvolume snapshot -r "@home/" "snapshots/@home_$SUFFIX"
 
 # step 4: backup snapshots
+echo
 echo "backing up @ snapshot (this may take a while) ..."
-sudo btrfs send "snapshots/@_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/snapshots/@_$SUFFIX"
+sudo btrfs send "snapshots/@_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/@_$SUFFIX.btrfs.zst"
+echo
 echo "backing up @home snapshot (this may take a while) ..."
-sudo btrfs send "snapshots/@home_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/snapshots/@home_$SUFFIX"
+sudo btrfs send "snapshots/@home_$SUFFIX" | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst"
 
 echo "backup completed successfully: $SUFFIX"
