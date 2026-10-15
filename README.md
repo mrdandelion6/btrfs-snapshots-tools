@@ -23,6 +23,8 @@ all you need to do for `b.sh` to work is just plug in the special usb. the
 mounting is all handled , but if you already have something mounted that is also
 fine.
 
+also make sure to delete older snapshots on the pc if you don't need them anymore.
+
 ### making a snapshot
 
 to make a btrfs snapshot ,

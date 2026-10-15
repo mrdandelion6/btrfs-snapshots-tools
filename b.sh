@@ -1,6 +1,26 @@
 #!/bin/bash
 set -euo pipefail
 
+# on any failed command , print where it failed and list leftovers from this run (does not delete anything)
+on_error() {
+    local code=$1 line=$2 cmd=$3
+    echo
+    echo "[ERROR] failed at line $line (exit code $code): $cmd"
+    if [[ -n "${SUFFIX:-}" ]]; then
+        local leftovers=()
+        for f in "${root_mount:-}/snapshots/@_$SUFFIX" "${root_mount:-}/snapshots/@home_$SUFFIX" \
+                 "/mnt/usb/backup/btrfs_snapshots/potato/@_$SUFFIX.btrfs.zst" \
+                 "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst"; do
+            [[ -e "$f" ]] && leftovers+=("$f")
+        done
+        if (( ${#leftovers[@]} )); then
+            echo "this run left the following behind (backups may be incomplete). delete manually if needed:"
+            printf '  %s\n' "${leftovers[@]}"
+        fi
+    fi
+}
+trap 'on_error $? $LINENO "$BASH_COMMAND"' ERR
+
 # prerequsites: just make sure you connected the special usb. rest is handled.
 
 # step 1: mount usb if not already mounted
