@@ -10,7 +10,8 @@ on_error() {
         local leftovers=()
         for f in "${root_mount:-}/snapshots/@_$SUFFIX" "${root_mount:-}/snapshots/@home_$SUFFIX" \
                  "/mnt/usb/backup/btrfs_snapshots/potato/@_$SUFFIX.btrfs.zst" \
-                 "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst"; do
+                 "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst" \
+                 "/mnt/usb/backup/btrfs_snapshots/potato/boot_$SUFFIX.tar.zst"; do
             [[ -e "$f" ]] && leftovers+=("$f")
         done
         if (( ${#leftovers[@]} )); then
@@ -90,6 +91,14 @@ else
     echo "[GOOD] found partitions @ and @home in $root_mount"
 fi
 
+# check if boot partition is mounted (it is a separate partition , not part of the btrfs snapshots)
+if ! mountpoint -q "/boot"; then
+    echo "[ERROR] boot partition is not mounted at /boot"
+    exit 1
+else
+    echo "[GOOD] found boot partition at /boot"
+fi
+
 # step 3: create snapshots
 SUFFIX="$(date +%Y-%m-%d_%H%M)"
 echo "[CREATING SNAPSHOTS]"
@@ -105,6 +114,9 @@ sudo btrfs send "snapshots/@_$SUFFIX" | pv | zstd > "/mnt/usb/backup/btrfs_snaps
 
 echo "backing up @home snapshot (this may take a while) ..."
 sudo btrfs send "snapshots/@home_$SUFFIX" | pv | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/@home_$SUFFIX.btrfs.zst"
+
+echo "backing up /boot ..."
+sudo tar -cf - -C /boot . | pv | zstd > "/mnt/usb/backup/btrfs_snapshots/potato/boot_$SUFFIX.tar.zst"
 
 echo "[GOOD] backup completed successfully: $SUFFIX"
 
